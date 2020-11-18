@@ -8,10 +8,32 @@
 <body>
     <form method="post">
         {% csrf_token %}
-        <table>
-            {{ formset }}
-        </table>
+        {% if formset.non_form_errors %}
+            <div>{{ formset.non_form_errors }}</div>
+        {% endif %}
+        {{ formset.management_form }}
+        <div id="form_set">
+            {% for form in formset.forms %}
+                <table class="no_error">
+                    {{ form.as_table }}
+                </table>
+            {% endfor %}
+        </div>
         <input type="submit" value="Submit" class="button" />
+        <input type="button" value="Add Items" id='add_items'>
+        <div id="empty_form" style="display:none">
+            <table class='no_error'>
+            {{ formset.empty_form.as_table }}
+            </table>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+            $('#add_items').click(function() {
+                var form_index = $('#id_form-TOTAL_FORMS').val();
+                $('#form_set').append($('#empty_form').html().replace(/__prefix__/g, form_index));
+                $('#id_form-TOTAL_FORMS').val(parseInt(form_index) + 1);
+            })
+        </script>
     </form>
 </body>
 </html>

@@ -70,12 +70,14 @@ def details(request:HttpRequest) -> HttpResponse:
 
 
 def place_order(request:HttpRequest) -> HttpResponse:
-    OrderFormSet = modelformset_factory(Coffee, fields=['name', 'size', 'quantity'],max_num=4, extra=2)
+    OrderFormSet = modelformset_factory(Coffee, fields=['name', 'size', 'quantity'],max_num=10, extra=1,
+                                    validate_max=True, can_delete=True)
     if request.method == POST:
         order_formset = OrderFormSet(request.POST)
         if order_formset.is_valid():
             order_formset.save()
             return redirect('/')
     else:
-        order_formset = OrderFormSet()
+        order_formset = OrderFormSet(queryset=Coffee.objects.none())
+
         return render(request, 'coffeeshop/order.html', {'formset': order_formset})
