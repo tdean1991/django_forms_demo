@@ -1,10 +1,10 @@
 from django.template import loader
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.forms import modelformset_factory
-from django.contrib.auth import login
+from django.forms import modelformset_factory, inlineformset_factory
+from django.contrib.auth import login, get_user_model
 
-from .models import User, CoffeeType, Coffee
+from .models import User, CoffeeType, Coffee, Size, QuantityChoices
 
 from . import forms
 POST = "POST"
@@ -50,7 +50,7 @@ def signup(request:HttpRequest) -> HttpResponse:
         if form.is_valid():
             user = form.save()
             login(request,user)
-            return redirect('details')
+            return redirect('order')
     else:
         form = forms.Signup(initial={'email':'@gmail.com'})
     
@@ -70,14 +70,20 @@ def details(request:HttpRequest) -> HttpResponse:
 
 
 def place_order(request:HttpRequest) -> HttpResponse:
-    OrderFormSet = modelformset_factory(Coffee, fields=['name', 'size', 'quantity'],max_num=10, extra=1,
-                                    validate_max=True, can_delete=True)
+    #OrderFormSet = modelformset_factory(Coffee, fields=['name', 'size', 'quantity'],max_num=10, extra=1,
+     #                               validate_max=True, can_delete=True)
+    OrderFormSet = inlineformset_factory(get_user_model(), Coffee, fields=['name', 'size', 'quantity'],max_num=5, extra=1,
+                                   validate_max=True, can_delete=True)
+    user = get_user_model().objects.get(username=request.user.username)
+
     if request.method == POST:
-        order_formset = OrderFormSet(request.POST)
+        order_formset = OrderFormSet(request.POST, instance=user)
         if order_formset.is_valid():
             order_formset.save()
             return redirect('/')
     else:
-        order_formset = OrderFormSet(queryset=Coffee.objects.none())
+        order_formset = OrderFormSet(initial=[{'name':CoffeeType.AMERICANO, 'size':Size.LARGE, 'quantity':QuantityChoices.ONE}],
+            queryset=Coffee.objects.none(),
+            instance=user)
 
         return render(request, 'coffeeshop/order.html', {'formset': order_formset})

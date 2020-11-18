@@ -1,5 +1,6 @@
 from django.db import models
 import django.core.validators as validators
+from django.contrib.auth import get_user_model
 from .validators import validate_zipcode
 from .utils import CoffeeType, Size, QuantityChoices
 
@@ -28,6 +29,7 @@ class Coffee(models.Model):
     name = models.CharField(max_length=10, choices=CoffeeType.choices)
     size = models.CharField(max_length=1, choices=Size.choices)
     quantity = models.CharField(max_length=1, choices=QuantityChoices.choices)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.name
