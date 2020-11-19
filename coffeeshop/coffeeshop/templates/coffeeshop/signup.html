@@ -1,16 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoffeeShop Signup</title>
-</head>
-<body>
-    <h2>Sign up</h2>
-    <form method="post">
-        {% csrf_token %}
-            {{ form.as_p }}
-        <button type="submit">Sign Up</button>
-    </form>
-</body>
-</html>
+{% extends 'coffeeshop/base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}
+    Register
+{% endblock %}
+
+{% block content %}
+{% crispy form %}
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+    <script>
+        const csrftoken = Cookies.get('csrftoken');
+        let inp = $("input[name='username']");
+            //alert(inp.prop('name') + ' ' + inp.prop('type')) 
+            inp.change(function() {
+            let username = $(this).val();
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))){
+                        // Only send the url to relative URLS i.e. locally.
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+            $.ajax({
+                type: "POST",
+                url: '{% url "validate_username" %}',
+                data: {
+                    'username':username,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.is_taken) {
+                        alert("This user is already taken. Please choose another.");
+                    }
+                }
+            });
+        })
+    </script>
+{% endblock %}

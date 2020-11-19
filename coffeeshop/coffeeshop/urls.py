@@ -24,4 +24,5 @@ urlpatterns = [
     path('coffeeshop/thanks/',views.thanks, name='thanks'),
     path('coffeeshop/order/', views.place_order, name='order'),
     path('coffeeshop/details/', views.details, name='details'),
+    path('ajax/validate_username/', views.validate_username, name='validate_username'),
 ]

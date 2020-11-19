@@ -1,5 +1,5 @@
 from django.template import loader
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.forms import modelformset_factory, inlineformset_factory
 from django.contrib.auth import login, get_user_model
@@ -50,7 +50,7 @@ def signup(request:HttpRequest) -> HttpResponse:
         if form.is_valid():
             user = form.save()
             login(request,user)
-            return redirect('order')
+            return redirect('details')
     else:
         form = forms.Signup(initial={'email':'@gmail.com'})
     
@@ -87,3 +87,10 @@ def place_order(request:HttpRequest) -> HttpResponse:
             instance=user)
 
         return render(request, 'coffeeshop/order.html', {'formset': order_formset})
+
+def validate_username(request):
+    username = request.POST.get('username', None)
+    data = {
+        'is_taken': User.objects.filter(username__iexact=username).exists()
+    }
+    return JsonResponse(data)
